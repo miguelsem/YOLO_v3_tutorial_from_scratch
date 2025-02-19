@@ -226,7 +226,6 @@ class Darknet(nn.Module):
         
         return detections
 
-
     def load_weights(self, weightfile):
         #Open the weights file
         fp = open(weightfile, "rb")
