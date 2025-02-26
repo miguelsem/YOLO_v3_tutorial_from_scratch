@@ -5,8 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F 
 from torch.autograd import Variable
 import numpy as np
-from util import * 
-
+from util import *
+# from pytorch_lightning import LightningModule
 
 
 def get_test_input():
@@ -17,6 +17,7 @@ def get_test_input():
     img_ = torch.from_numpy(img_).float()     #Convert to float
     img_ = Variable(img_)                     # Convert to Variable
     return img_
+
 
 def parse_cfg(cfgfile):
     """
@@ -59,7 +60,6 @@ class DetectionLayer(nn.Module):
     def __init__(self, anchors):
         super(DetectionLayer, self).__init__()
         self.anchors = anchors
-
 
 
 def create_modules(blocks):
@@ -164,11 +164,15 @@ def create_modules(blocks):
         
     return (net_info, module_list)
 
+
 class Darknet(nn.Module):
     def __init__(self, cfgfile):
         super(Darknet, self).__init__()
         self.blocks = parse_cfg(cfgfile)
         self.net_info, self.module_list = create_modules(self.blocks)
+
+        l0 = self.module_list[0].conv_0
+        self.module_list[0].conv_0 = nn.Conv2d(in_channels=1, out_channels=l0.out_channels, kernel_size=l0.kernel_size, stride=l0.stride, padding=l0.padding, bias=l0.bias)
         
     def forward(self, x, CUDA):
         modules = self.blocks[1:]

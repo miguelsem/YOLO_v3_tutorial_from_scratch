@@ -104,8 +104,8 @@ if __name__ == '__main__':
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=5e-4)
 
         # Load dataset (assuming a DataLoader is implemented)
-        img_dir = r"D:\src\YOLO_v3_tutorial_from_scratch\data\feb12\images\train"
-        label_dir = r"D:\src\YOLO_v3_tutorial_from_scratch\data\feb12\labels\train"
+        img_dir = r"D:\src\YOLO_v3_tutorial_from_scratch\data\feb12\images\trainh\data\feb12\labels\tra"
+        label_dir = r"D:\src\YOLO_v3_tutorial_from_scratcin"
         train_loader = get_dataloader(img_dir, label_dir, batch_size=args.bs)  # Implement a function to load dataset
 
         print("Starting training...")

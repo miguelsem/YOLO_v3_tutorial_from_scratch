@@ -44,17 +44,17 @@ def bbox_iou(box1, box2):
     
     return iou
 
-def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA = True):
 
-    
+def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA = True):
     batch_size = prediction.size(0)
-    stride =  inp_dim // prediction.size(2)
+    stride = inp_dim // prediction.size(2)
     grid_size = inp_dim // stride
-    bbox_attrs = 5 + num_classes
+    bbox_attrs = 3*6  # (3+6) + num_classes
     num_anchors = len(anchors)
-    
-    prediction = prediction.view(batch_size, bbox_attrs*num_anchors, grid_size*grid_size)
-    prediction = prediction.transpose(1,2).contiguous()
+
+    prediction = prediction.view(batch_size, -1, grid_size * grid_size)
+    # prediction = prediction.view(batch_size, bbox_attrs*num_anchors, grid_size*grid_size)
+    prediction = prediction.transpose(1, 2).contiguous()
     prediction = prediction.view(batch_size, grid_size*grid_size*num_anchors, bbox_attrs)
     anchors = [(a[0]/stride, a[1]/stride) for a in anchors]
 
@@ -65,7 +65,7 @@ def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA = True):
     
     #Add the center offsets
     grid = np.arange(grid_size)
-    a,b = np.meshgrid(grid, grid)
+    a, b = np.meshgrid(grid, grid)
 
     x_offset = torch.FloatTensor(a).view(-1,1)
     y_offset = torch.FloatTensor(b).view(-1,1)
@@ -76,7 +76,7 @@ def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA = True):
 
     x_y_offset = torch.cat((x_offset, y_offset), 1).repeat(1,num_anchors).view(-1,2).unsqueeze(0)
 
-    prediction[:,:,:2] += x_y_offset
+    prediction[:, :, :2] += x_y_offset
 
     #log space transform height and the width
     anchors = torch.FloatTensor(anchors)
@@ -93,6 +93,7 @@ def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA = True):
     
     return prediction
 
+
 def write_results(prediction, confidence, num_classes, nms_conf = 0.4):
     conf_mask = (prediction[:,:,4] > confidence).float().unsqueeze(2)
     prediction = prediction*conf_mask
@@ -107,8 +108,6 @@ def write_results(prediction, confidence, num_classes, nms_conf = 0.4):
     batch_size = prediction.size(0)
 
     write = False
-    
-
 
     for ind in range(batch_size):
         image_pred = prediction[ind]          #image Tensor
@@ -129,16 +128,13 @@ def write_results(prediction, confidence, num_classes, nms_conf = 0.4):
         
         if image_pred_.shape[0] == 0:
             continue       
-#        
-  
+#
         #Get the various classes detected in the image
         img_classes = unique(image_pred_[:,-1])  # -1 index holds the class index
-        
-        
+
         for cls in img_classes:
             #perform NMS
 
-        
             #get the detections with one particular class
             cls_mask = image_pred_*(image_pred_[:,-1] == cls).float().unsqueeze(1)
             class_mask_ind = torch.nonzero(cls_mask[:,-2]).squeeze()
@@ -183,7 +179,8 @@ def write_results(prediction, confidence, num_classes, nms_conf = 0.4):
         return output
     except:
         return 0
-    
+
+
 def letterbox_image(img, inp_dim):
     '''resize image with unchanged aspect ratio using padding'''
     img_w, img_h = img.shape[1], img.shape[0]
@@ -198,6 +195,7 @@ def letterbox_image(img, inp_dim):
     
     return canvas
 
+
 def prep_image(img, inp_dim):
     """
     Prepare image for inputting to the neural network. 
@@ -208,6 +206,7 @@ def prep_image(img, inp_dim):
     img = img[:,:,::-1].transpose((2,0,1)).copy()
     img = torch.from_numpy(img).float().div(255.0).unsqueeze(0)
     return img
+
 
 def load_classes(namesfile):
     fp = open(namesfile, "r")

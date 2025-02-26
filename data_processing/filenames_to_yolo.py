@@ -26,10 +26,10 @@ for image_folder, label_folder in zip(folder_image, folder_label):
                 coords = [(coords[i], coords[i+1]) for i in range(0, len(coords), 2) if coords[i] is not None]
 
                 # Normalize coordinates (assuming 640x640 images)
-                width, height = 193, 213  # Adjust if images are different sizes
+                width, height = 192, 192  # Adjust if images are different sizes
                 keypoints = []
                 for x, y in coords:
-                    keypoints.extend([1, x / width, y / height])  # Visibility = 1
+                    keypoints.extend([x / width, y / height, 1])  # Visibility = 1
 
                 # Pad missing keypoints with (0,0,0)
                 while len(keypoints) < 6 * 3:

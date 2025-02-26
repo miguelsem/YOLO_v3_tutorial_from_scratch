@@ -43,7 +43,9 @@ class CustomDataset(Dataset):
 
         sample = {
             "image": read_image(self.dataframe.iloc[idx]["path"]),
-            "label": self.dataframe.iloc[idx]["label"]
+            # "label": self.dataframe.iloc[idx]["label"]
+            # "label": list(map(int, self.dataframe.iloc[idx]["label"].split(",")))
+            "label": torch.tensor(list(map(int, self.dataframe.iloc[idx]["label"].split(","))), dtype=torch.long)
         }
 
         if self.transform:
